@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Zeitgeist AI — Prediction Market</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#08080c;
+  --bg2:#0f0f15;
+  --bg3:#16161e;
+  --bg4:#1e1e28;
+  --border:#ffffff0f;
+  --border2:#ffffff18;
+  --text:#f0f0f0;
+  --muted:#666;
+  --muted2:#888;
+  --accent:#7c5cfc;
+  --accent2:#a78bfa;
+  --green:#34d399;
+  --red:#f87171;
+  --yellow:#fbbf24;
+  --cyan:#22d3ee;
+}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:#333;border-radius:2px;}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:var(--bg)cc;
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;
+  height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none;}
+.nav-logo svg{width:36px;height:36px;}
+.nav-logo-text{font-size:1.1rem;font-weight:700;letter-spacing:.04em;color:var(--text);}
+.nav-logo-text span{color:var(--accent2);}
+.nav-links{display:flex;align-items:center;gap:8px;}
+.nav-btn{
+  padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;
+  cursor:pointer;border:none;transition:all .15s;text-decoration:none;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.nav-btn-ghost{background:transparent;color:var(--muted2);}
+.nav-btn-ghost:hover{color:var(--text);background:var(--bg3);}
+.nav-btn-primary{background:var(--accent);color:#fff;}
+.nav-btn-primary:hover{background:#6d4ee0;}
+.wallet-addr{
+  font-size:12px;font-family:monospace;
+  background:var(--bg3);border:1px solid var(--border2);
+  padding:6px 12px;border-radius:8px;color:var(--muted2);
+}
+
+/* ── HERO ── */
+.hero{
+  padding:4rem 2rem 3rem;
+  position:relative;
+  overflow:hidden;
+}
+.hero-inner{
+  max-width:1100px;margin:0 auto;
+  display:flex;align-items:center;
+  justify-content:space-between;
+  gap:3rem;
+}
+.hero-left{
+  flex:1;max-width:540px;
+}
+.hero-right{
+  flex:0 0 420px;
+  display:flex;align-items:center;justify-content:center;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--bg3);border:1px solid var(--border2);
+  padding:6px 14px;border-radius:20px;
+  font-size:12px;color:var(--accent2);font-weight:500;
+  margin-bottom:1.5rem;letter-spacing:.04em;
+}
+.hero-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.hero h1{
+  font-size:clamp(2rem,4vw,3.4rem);
+  font-weight:800;line-height:1.1;
+  letter-spacing:-.02em;
+  margin-bottom:1.25rem;
+}
+.hero h1 .grad{
+  background:linear-gradient(135deg,var(--accent2),var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero-sub{
+  font-size:1rem;color:var(--muted2);
+  margin-bottom:2rem;line-height:1.7;
+}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;}
+
+/* ── BUTTONS ── */
+.btn{
+  padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;
+  cursor:pointer;border:none;transition:all .15s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#6d4ee0;transform:translateY(-1px);}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2);}
+.btn-outline:hover{background:var(--bg3);border-color:var(--border2);}
+
+/* ── MASCOT SCENE ── */
+.mascot-scene{
+  position:relative;
+  width:380px;height:380px;
+  display:flex;align-items:center;justify-content:center;
+}
+.mascot-ring{
+  position:absolute;border-radius:50%;
+  border:1px solid var(--accent);
+  opacity:.12;animation:spin-ring linear infinite;
+}
+.mascot-ring-1{width:320px;height:320px;animation-duration:20s;}
+.mascot-ring-2{width:260px;height:260px;animation-duration:15s;animation-direction:reverse;border-color:var(--cyan);}
+.mascot-ring-3{width:200px;height:200px;animation-duration:25s;opacity:.08;}
+@keyframes spin-ring{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.mascot-glow{
+  position:absolute;
+  width:280px;height:280px;
+  background:radial-gradient(circle,var(--accent)30,transparent 70%);
+  opacity:.2;border-radius:50%;
+  animation:glowpulse 3s ease-in-out infinite;
+}
+@keyframes glowpulse{0%,100%{opacity:.15;transform:scale(1);}50%{opacity:.3;transform:scale(1.1);}}
+.mascot-img{
+  width:300px;height:300px;
+  object-fit:contain;
+  position:relative;z-index:2;
+  animation:float 4s ease-in-out infinite;
+  filter:drop-shadow(0 8px 32px #7c5cfc66) drop-shadow(0 0 80px #a78bfa33);
+}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-16px);}}
+
+/* floating badges */
+.mascot-badge{
+  position:absolute;z-index:3;
+  background:var(--bg3);border:1px solid var(--border2);
+  padding:6px 12px;border-radius:20px;
+  font-size:12px;font-weight:600;
+  backdrop-filter:blur(10px);
+  animation:float 4s ease-in-out infinite;
+  box-shadow:0 4px 20px #00000040;
+}
+.mascot-badge-1{top:40px;right:20px;animation-delay:.5s;color:var(--accent2);}
+.mascot-badge-2{top:50%;left:0;transform:translateY(-50%);animation-delay:1s;color:var(--green);}
+.mascot-badge-3{bottom:60px;right:10px;animation-delay:1.5s;color:var(--yellow);}
+
+@media(max-width:768px){
+  .hero-inner{flex-direction:column;text-align:center;}
+  .hero-left{max-width:100%;}
+  .hero-right{display:none;}
+  .hero-ctas{justify-content:center;}
+}
+
+/* ── ANIMATED BACKGROUND CANVAS ── */
+#bg-canvas{
+  position:fixed;top:0;left:0;
+  width:100%;height:100%;
+  z-index:-1;pointer-events:none;
+}
+
+/* ── STATS BAR ── */
+.stats-bar{
+  display:flex;justify-content:center;gap:0;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  margin:0;background:var(--bg2);
+  flex-wrap:wrap;
+}
+.stat-item{
+  padding:1.25rem 2.5rem;text-align:center;
+  border-right:1px solid var(--border);
+}
+.stat-item:last-child{border-right:none;}
+.stat-val{font-size:1.5rem;font-weight:700;color:var(--accent2);}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+
+/* ── MAIN LAYOUT ── */
+main{max-width:1200px;margin:0 auto;padding:2.5rem 1.5rem;}
+
+/* ── SECTION HEADER ── */
+.section-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1.5rem;flex-wrap:wrap;gap:12px;
+}
+.section-title{font-size:1.1rem;font-weight:700;}
+
+/* ── CATEGORY TABS ── */
+.cat-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2rem;}
+.cat-tab{
+  padding:7px 16px;border-radius:20px;font-size:13px;font-weight:500;
+  cursor:pointer;border:1px solid var(--border);
+  background:var(--bg3);color:var(--muted2);
+  transition:all .15s;
+}
+.cat-tab:hover{border-color:var(--accent);color:var(--text);}
+.cat-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* ── MARKET GRID ── */
+.markets-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:16px;
+}
+.market-card{
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:1.25rem;
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
+  overflow:hidden;
+}
+.market-card::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--cyan));
+  opacity:0;transition:opacity .2s;
+}
+.market-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.market-card:hover::before{opacity:1;}
+.market-card-cat{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;
+  padding:3px 10px;border-radius:20px;margin-bottom:.75rem;
+}
+.cat-crypto{background:#f59e0b18;color:#f59e0b;}
+.cat-politics{background:#3b82f618;color:#60a5fa;}
+.cat-sports{background:#22c55e18;color:#4ade80;}
+.cat-tech{background:#a855f718;color:#c084fc;}
+.cat-culture{background:#ec489918;color:#f472b6;}
+
+.market-card-q{
+  font-size:.95rem;font-weight:600;line-height:1.45;
+  margin-bottom:1rem;color:var(--text);
+}
+.market-pool-bar{margin-bottom:.75rem;}
+.pool-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;}
+.pool-bar-bg{background:var(--bg4);border-radius:4px;height:6px;overflow:hidden;display:flex;}
+.pool-bar-seg{height:100%;transition:width .4s;}
+
+.market-card-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:.75rem;
+}
+.market-vol{font-size:12px;color:var(--muted2);}
+.market-vol strong{color:var(--text);}
+.market-deadline{font-size:11px;color:var(--muted);}
+.badge-resolved{
+  font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;
+  background:var(--green)20;color:var(--green);border:1px solid var(--green)40;
+}
+.badge-live{
+  font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;
+  background:var(--accent)20;color:var(--accent2);border:1px solid var(--accent)40;
+}
+
+/* ── MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:#000000cc;backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  padding:1rem;opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:18px;width:100%;max-width:560px;
+  max-height:90vh;overflow-y:auto;
+  transform:translateY(20px);transition:transform .2s;
+}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-header{
+  padding:1.5rem 1.5rem 0;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+}
+.modal-header h2{font-size:1.1rem;font-weight:700;line-height:1.4;}
+.modal-close{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--muted2);
+  font-size:16px;flex-shrink:0;
+}
+.modal-close:hover{color:var(--text);}
+.modal-body{padding:1.25rem 1.5rem 1.5rem;}
+
+/* ── OUTCOME BUTTONS ── */
+.outcomes-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem;}
+.outcome-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-radius:10px;
+  border:1px solid var(--border);background:var(--bg3);
+  cursor:pointer;transition:all .15s;text-align:left;
+  color:var(--text);font-size:14px;
+}
+.outcome-btn:hover{border-color:var(--accent);background:var(--bg4);}
+.outcome-btn.selected{border-color:var(--accent);background:var(--accent)18;}
+.outcome-pct{font-size:12px;font-weight:700;color:var(--accent2);}
+
+/* ── STAKE INPUT ── */
+.stake-wrap{margin-bottom:1.25rem;}
+.stake-label{font-size:12px;color:var(--muted);margin-bottom:6px;display:block;}
+.stake-input-row{display:flex;gap:8px;}
+.stake-input{
+  flex:1;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;padding:10px 14px;
+  color:var(--text);font-size:15px;outline:none;
+}
+.stake-input:focus{border-color:var(--accent);}
+.stake-currency{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px;padding:10px 14px;
+  color:var(--muted2);font-size:14px;font-weight:600;
+}
+.stake-presets{display:flex;gap:6px;margin-top:8px;}
+.preset-btn{
+  padding:5px 12px;border-radius:6px;font-size:12px;
+  background:var(--bg4);border:1px solid var(--border);
+  color:var(--muted2);cursor:pointer;transition:all .1s;
+}
+.preset-btn:hover{color:var(--text);border-color:var(--accent);}
+
+/* ── REASONING BOX ── */
+.reasoning-box{
+  background:var(--bg4);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;
+  font-size:13px;color:var(--muted2);line-height:1.6;
+  margin-bottom:1rem;
+}
+.reasoning-box strong{color:var(--accent2);display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;}
+
+/* ── CREATE MARKET FORM ── */
+.form-group{margin-bottom:1.1rem;}
+.form-label{font-size:12px;color:var(--muted);margin-bottom:6px;display:block;font-weight:500;}
+.form-input,.form-select,.form-textarea{
+  width:100%;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;padding:10px 14px;
+  color:var(--text);font-size:14px;outline:none;
+  transition:border-color .15s;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+.form-select{appearance:none;cursor:pointer;}
+.form-textarea{resize:vertical;min-height:80px;font-family:inherit;}
+.form-select option{background:var(--bg2);}
+.outcomes-builder{display:flex;flex-direction:column;gap:6px;}
+.outcome-input-row{display:flex;gap:6px;}
+.outcome-input-row .form-input{flex:1;}
+.remove-outcome{
+  background:var(--bg4);border:1px solid var(--border);
+  border-radius:8px;padding:0 12px;cursor:pointer;
+  color:var(--muted);font-size:16px;
+}
+.remove-outcome:hover{color:var(--red);}
+.add-outcome-btn{
+  background:transparent;border:1px dashed var(--border2);
+  border-radius:8px;padding:8px;color:var(--muted);
+  cursor:pointer;font-size:13px;transition:all .15s;
+}
+.add-outcome-btn:hover{border-color:var(--accent);color:var(--accent2);}
+
+/* ── TX STATUS ── */
+.tx-status{
+  padding:10px 14px;border-radius:10px;
+  font-size:13px;font-weight:500;
+  display:flex;align-items:center;gap:8px;
+  margin-top:10px;
+}
+.tx-pending{background:var(--yellow)15;color:var(--yellow);border:1px solid var(--yellow)30;}
+.tx-success{background:var(--green)15;color:var(--green);border:1px solid var(--green)30;}
+.tx-error{background:var(--red)15;color:var(--red);border:1px solid var(--red)30;}
+.spinner{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid currentColor;border-top-color:transparent;
+  animation:spin .6s linear infinite;flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── EMPTY STATE ── */
+.empty-state{
+  text-align:center;padding:4rem 2rem;
+  display:flex;flex-direction:column;align-items:center;gap:1rem;
+}
+.empty-state img{width:100px;opacity:.5;}
+.empty-state p{color:var(--muted2);font-size:14px;}
+
+/* ── FOOTER ── */
+footer{
+  border-top:1px solid var(--border);
+  padding:2rem;text-align:center;
+  color:var(--muted);font-size:12px;
+  margin-top:4rem;
+}
+footer a{color:var(--accent2);text-decoration:none;}
+
+/* ── UTIL ── */
+.divider{border:none;border-top:1px solid var(--border);margin:1rem 0;}
+.text-green{color:var(--green);}
+.text-red{color:var(--red);}
+.text-accent{color:var(--accent2);}
+.text-muted{color:var(--muted2);}
+.fw7{font-weight:700;}
+
+@media(max-width:600px){
+  nav{padding:0 1rem;}
+  .stat-item{padding:1rem 1.5rem;}
+  main{padding:1.5rem 1rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ANIMATED BG -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#" onclick="showPage('home')">
+    <svg viewBox="0 0 36 36" fill="none">
+      <polygon points="2,2 34,2 34,11 14,11 34,32 34,34 2,34 2,25 22,25 2,4" fill="#a78bfa"/>
+      <polygon points="18,14 22,21 18,26 14,21" fill="#08080c"/>
+    </svg>
+    <span class="nav-logo-text">ZEITGEIST <span>AI</span></span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-btn nav-btn-ghost" href="#" onclick="showPage('home')">Markets</a>
+    <a class="nav-btn nav-btn-ghost" href="#" onclick="showPage('create')">Create</a>
+    <div class="wallet-addr" id="wallet-display">Not connected</div>
+    <button class="nav-btn nav-btn-primary" onclick="connectWallet()" id="connect-btn">Connect Wallet</button>
+  </div>
+</nav>
+
+<!-- ── PAGE: HOME ── -->
+<div id="page-home">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <!-- LEFT: text -->
+      <div class="hero-left">
+        <div class="hero-eyebrow">
+          <span class="dot"></span>
+          Powered by GenLayer · AI Consensus
+        </div>
+        <h1>Predict the Future.<br/><span class="grad">Let AI Judge It.</span></h1>
+        <p class="hero-sub">
+          The world's first prediction market where LLM validators fetch live evidence
+          and reach trustless consensus on real-world outcomes. No oracle. No human judge.
+        </p>
+        <div class="hero-ctas">
+          <button class="btn btn-primary" onclick="showPage('create')">⚡ Create a Market</button>
+          <button class="btn btn-outline" onclick="document.getElementById('markets-section').scrollIntoView({behavior:'smooth'})">Browse Markets →</button>
+        </div>
+      </div>
+      <!-- RIGHT: mascot -->
+      <div class="hero-right">
+        <div class="mascot-scene">
+          <div class="mascot-ring mascot-ring-1"></div>
+          <div class="mascot-ring mascot-ring-2"></div>
+          <div class="mascot-ring mascot-ring-3"></div>
+          <div class="mascot-glow"></div>
+          <img class="mascot-img" src="zeth.png" alt="Zeitgeist AI mascot"
+            onerror="this.outerHTML='<div style=\'font-size:120px;text-align:center;\'>🐱</div>'"
+          />
+          <div class="mascot-badge mascot-badge-1">🤖 AI Judge</div>
+          <div class="mascot-badge mascot-badge-2">⚡ Live</div>
+          <div class="mascot-badge mascot-badge-3">🏆 Win</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-val" id="stat-markets">0</div>
+      <div class="stat-label">Total Markets</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val" id="stat-volume">0 GEN</div>
+      <div class="stat-label">Total Volume</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val" id="stat-resolved">0</div>
+      <div class="stat-label">AI Resolved</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">5</div>
+      <div class="stat-label">LLM Validators</div>
+    </div>
+  </div>
+
+  <!-- MARKETS -->
+  <main id="markets-section">
+    <div class="section-header">
+      <span class="section-title">🔥 Active Markets</span>
+      <button class="btn btn-outline" style="padding:8px 16px;font-size:13px;" onclick="loadMarkets()">↻ Refresh</button>
+    </div>
+
+    <div class="cat-tabs">
+      <div class="cat-tab active" onclick="filterCat('all',this)">All</div>
+      <div class="cat-tab" onclick="filterCat('crypto',this)">🪙 Crypto</div>
+      <div class="cat-tab" onclick="filterCat('politics',this)">🏛️ Politics</div>
+      <div class="cat-tab" onclick="filterCat('sports',this)">⚽ Sports</div>
+      <div class="cat-tab" onclick="filterCat('tech',this)">🤖 Tech / AI</div>
+      <div class="cat-tab" onclick="filterCat('culture',this)">🎭 Culture</div>
+    </div>
+
+    <div class="markets-grid" id="markets-grid">
+      <!-- populated by JS -->
+    </div>
+  </main>
+
+</div>
+
+<!-- ── PAGE: CREATE ── -->
+<div id="page-create" style="display:none;">
+  <main style="max-width:620px;">
+    <div style="margin-bottom:2rem;">
+      <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:.5rem;">Create a Market</h2>
+      <p style="color:var(--muted2);font-size:14px;">Write your question in plain English. AI validators will fetch evidence and resolve it automatically after the deadline.</p>
+    </div>
+
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:1.5rem;">
+
+      <div class="form-group">
+        <label class="form-label">Question *</label>
+        <input class="form-input" id="f-question" placeholder="e.g. Will Bitcoin close above $120k on July 1, 2025?" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Category *</label>
+        <select class="form-select" id="f-category">
+          <option value="">Select category...</option>
+          <option value="crypto">🪙 Crypto</option>
+          <option value="politics">🏛️ Politics</option>
+          <option value="sports">⚽ Sports</option>
+          <option value="tech">🤖 Tech / AI</option>
+          <option value="culture">🎭 Culture</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Resolution URL * <span style="color:var(--muted);font-weight:400;">(AI will fetch this page to judge)</span></label>
+        <input class="form-input" id="f-url" placeholder="https://coinmarketcap.com/currencies/bitcoin/" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Resolution Deadline *</label>
+        <input class="form-input" type="datetime-local" id="f-deadline" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Outcomes * <span style="color:var(--muted);font-weight:400;">(min 2, max 8)</span></label>
+        <div class="outcomes-builder" id="outcomes-builder">
+          <div class="outcome-input-row">
+            <input class="form-input" placeholder="Outcome 1 e.g. Yes" value="Yes"/>
+            <button class="remove-outcome" onclick="removeOutcome(this)">×</button>
+          </div>
+          <div class="outcome-input-row">
+            <input class="form-input" placeholder="Outcome 2 e.g. No" value="No"/>
+            <button class="remove-outcome" onclick="removeOutcome(this)">×</button>
+          </div>
+        </div>
+        <button class="add-outcome-btn" style="width:100%;margin-top:6px;" onclick="addOutcome()">+ Add outcome</button>
+      </div>
+
+      <hr class="divider"/>
+
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;" onclick="createMarket()">
+        ⚡ Deploy Market on GenLayer
+      </button>
+
+      <div id="create-status" style="display:none;" class="tx-status"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ── MARKET DETAIL MODAL ── -->
+<div class="modal-overlay" id="market-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div id="modal-cat-badge" class="market-card-cat" style="margin-bottom:8px;"></div>
+        <h2 id="modal-question"></h2>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Pool bars -->
+      <div id="modal-pools" style="margin-bottom:1.25rem;"></div>
+
+      <!-- Resolved reasoning -->
+      <div id="modal-reasoning" style="display:none;" class="reasoning-box">
+        <strong>🤖 AI Verdict</strong>
+        <span id="modal-reasoning-text"></span>
+      </div>
+
+      <!-- Bet section -->
+      <div id="modal-bet-section">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;">Choose your outcome</p>
+        <div class="outcomes-grid" id="modal-outcomes"></div>
+
+        <div class="stake-wrap">
+          <label class="stake-label">Stake amount</label>
+          <div class="stake-input-row">
+            <input class="stake-input" type="number" id="stake-amount" placeholder="0.0" min="0" step="0.01"/>
+            <div class="stake-currency">GEN</div>
+          </div>
+          <div class="stake-presets">
+            <button class="preset-btn" onclick="setStake(10)">10</button>
+            <button class="preset-btn" onclick="setStake(50)">50</button>
+            <button class="preset-btn" onclick="setStake(100)">100</button>
+            <button class="preset-btn" onclick="setStake(500)">500</button>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;" onclick="placeBet()">
+          Place Bet
+        </button>
+        <div id="bet-status" style="display:none;" class="tx-status"></div>
+      </div>
+
+      <!-- Already bet / claim -->
+      <div id="modal-claim-section" style="display:none;">
+        <div class="reasoning-box">
+          <strong>Your bet</strong>
+          <span id="my-bet-info"></span>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;margin-top:8px;" id="claim-btn" onclick="claimWinnings()" style="display:none;">
+          🏆 Claim Winnings
+        </button>
+        <div id="claim-status" style="display:none;" class="tx-status"></div>
+      </div>
+
+      <!-- Resolve button -->
+      <div id="modal-resolve-section" style="display:none;margin-top:1rem;">
+        <hr class="divider"/>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Deadline has passed. Anyone can trigger AI resolution.</p>
+        <button class="btn btn-outline" style="width:100%;justify-content:center;" onclick="resolveMarket()">
+          🤖 Trigger AI Resolution
+        </button>
+        <div id="resolve-status" style="display:none;" class="tx-status"></div>
+      </div>
+
+      <hr class="divider" style="margin-top:1.25rem;"/>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);">
+        <span>Resolution URL: <a id="modal-url" href="#" target="_blank" style="color:var(--accent2);">view source</a></span>
+        <span id="modal-deadline-text"></span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>Zeitgeist AI · Built on <a href="https://genlayer.com" target="_blank">GenLayer</a> · AI-powered prediction markets</p>
+  <p style="margin-top:6px;opacity:.5;">Testnet only — not financial advice</p>
+</footer>
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────
+const CONFIG = {
+  CONTRACT_ADDRESS: '0x8Bb2affa4fe21b9ad46716EB744Ac3797C29D884',
+  RPC_URL: 'https://studio.genlayer.com/api',
+  CHAIN_ID: 61999,
+};
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let wallet = null;
+let markets = [];
+let currentMarket = null;
+let selectedOutcome = null;
+let currentFilter = 'all';
+
+// ─────────────────────────────────────────────
+// DEMO MARKETS (shown before contract is deployed)
+// ─────────────────────────────────────────────
+const DEMO_MARKETS = [
+  {
+    id:0, question:"Will Bitcoin close above $200,000 before December 31, 2026?",
+    category:"crypto", outcomes:["Yes","No"],
+    outcome_pools:[3200,1800], total_volume:5000,
+    resolved:false, winning_index:-1, reasoning:"",
+    deadline: Math.floor(Date.now()/1000)+86400*180,
+    resolution_url:"https://coinmarketcap.com/currencies/bitcoin/",
+    creator:"0xabc...123"
+  },
+  {
+    id:1, question:"Who wins the 2026 FIFA World Cup?",
+    category:"sports", outcomes:["Brazil","France","Argentina","England","Spain","Germany","Portugal","Morocco"],
+    outcome_pools:[1200,800,1500,600,900,400,300,200], total_volume:5900,
+    resolved:false, winning_index:-1, reasoning:"",
+    deadline: Math.floor(Date.now()/1000)+86400*60,
+    resolution_url:"https://en.wikipedia.org/wiki/2026_FIFA_World_Cup",
+    creator:"0xdef...456"
+  },
+  {
+    id:2, question:"Will Ethereum hit $10,000 before end of 2026?",
+    category:"crypto", outcomes:["Yes","No"],
+    outcome_pools:[2800,700], total_volume:3500,
+    resolved:false, winning_index:-1, reasoning:"",
+    deadline: Math.floor(Date.now()/1000)+86400*180,
+    resolution_url:"https://coinmarketcap.com/currencies/ethereum/",
+    creator:"0xghi...789"
+  },
+  {
+    id:3, question:"Will the US Federal Reserve cut rates before end of 2026?",
+    category:"politics", outcomes:["Yes — one cut","Yes — two+ cuts","No cut"],
+    outcome_pools:[900,300,1800], total_volume:3000,
+    resolved:false, winning_index:-1, reasoning:"",
+    deadline: Math.floor(Date.now()/1000)+86400*120,
+    resolution_url:"https://www.federalreserve.gov/newsevents/pressreleases.htm",
+    creator:"0xjkl...012"
+  },
+  {
+    id:4, question:"Which AI company releases the most impressive model in 2026?",
+    category:"tech", outcomes:["OpenAI","Anthropic","Google DeepMind","Meta AI","xAI","Mistral"],
+    outcome_pools:[1800,2100,900,400,300,200], total_volume:5700,
+    resolved:false, winning_index:-1, reasoning:"",
+    deadline: Math.floor(Date.now()/1000)+86400*150,
+    resolution_url:"https://artificialanalysis.ai/",
+    creator:"0xpqr...678"
+  },
+  {
+    id:5, question:"Will Donald Trump finish his full term as US President in 2028?",
+    category:"politics", outcomes:["Yes","No"],
+    outcome_pools:[4100,900], total_volume:5000,
+    resolved:false, winning_index:-1, reasoning:"",
+    deadline: Math.floor(Date.now()/1000)+86400*200,
+    resolution_url:"https://en.wikipedia.org/wiki/Donald_Trump",
+    creator:"0xmno...345"
+  },
+];
+
+// ─────────────────────────────────────────────
+// WALLET
+// ─────────────────────────────────────────────
+async function connectWallet(){
+  if(typeof window.ethereum === 'undefined'){
+    alert('MetaMask not found!');
+    return;
+  }
+  try{
+    const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
+    wallet = accounts[0];
+    // Switch to GenLayer Studionet
+    try{
+      await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0xF22F'}]});
+    } catch(e){
+      await window.ethereum.request({
+        method:'wallet_addEthereumChain',
+        params:[{chainId:'0xF22F',chainName:'GenLayer Studionet',rpcUrls:['https://studio.genlayer.com/api'],nativeCurrency:{name:'GEN',symbol:'GEN',decimals:18}}]
+      });
+    }
+    document.getElementById('wallet-display').textContent = wallet.slice(0,6)+'...'+wallet.slice(-4);
+    document.getElementById('connect-btn').textContent = 'Connected';
+    document.getElementById('connect-btn').style.background = '#1a2e1a';
+    document.getElementById('connect-btn').style.color = 'var(--green)';
+  } catch(e){
+    console.error(e);
+    alert('Connection failed: '+e.message);
+  }
+}
+
+// ─────────────────────────────────────────────
+// GENLAYER JS HELPERS (simplified RPC wrappers)
+// ─────────────────────────────────────────────
+async function glRead(functionName, args=[]){
+  const resp = await fetch(CONFIG.RPC_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      jsonrpc:'2.0', id:1, method:'gen_call',
+      params:[{
+        to: CONFIG.CONTRACT_ADDRESS,
+        data: JSON.stringify({method: functionName, args}),
+      },'latest']
+    })
+  });
+  const data = await resp.json();
+  if(data.error) throw new Error(data.error.message);
+  return JSON.parse(data.result);
+}
+
+async function glWrite(functionName, args=[], valueWei='0'){
+  if(!wallet){ alert('Connect your wallet first.'); return null; }
+  try{
+    // Encode data as hex for GenLayer
+    const jsonData = JSON.stringify({method: functionName, args: args});
+    const encoded = '0x' + Array.from(new TextEncoder().encode(jsonData))
+      .map(b => b.toString(16).padStart(2,'0')).join('');
+
+    const txHash = await window.ethereum.request({
+      method:'eth_sendTransaction',
+      params:[{
+        from: wallet,
+        to: CONFIG.CONTRACT_ADDRESS,
+        data: encoded,
+        value: '0x'+BigInt(valueWei).toString(16),
+        gas: '0x7A120',
+      }]
+    });
+    return txHash;
+  } catch(e){
+    console.error('glWrite error:',e);
+    throw e;
+  }
+}
+
+async function waitForTx(hash, statusEl){
+  setStatus(statusEl,'pending','Waiting for validators...');
+  let tries = 0;
+  while(tries < 60){
+    await sleep(3000);
+    try{
+      const resp = await fetch(CONFIG.RPC_URL,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_getTransactionReceipt',params:[hash]})
+      });
+      const data = await resp.json();
+      if(data.result && data.result.status){
+        const ok = data.result.status === '0x1';
+        setStatus(statusEl, ok?'success':'error', ok?'Transaction finalized!':'Transaction failed.');
+        return ok;
+      }
+    } catch(e){}
+    tries++;
+  }
+  setStatus(statusEl,'error','Timed out waiting for confirmation.');
+  return false;
+}
+
+// ─────────────────────────────────────────────
+// PAGES
+// ─────────────────────────────────────────────
+function showPage(page){
+  document.getElementById('page-home').style.display   = page==='home'   ? '' : 'none';
+  document.getElementById('page-create').style.display = page==='create' ? '' : 'none';
+  if(page==='home') loadMarkets();
+}
+
+// ─────────────────────────────────────────────
+// LOAD MARKETS
+// ─────────────────────────────────────────────
+async function loadMarkets(){
+  // Try contract first, fall back to demo data
+  try{
+    const info = await glRead('get_info',[]);
+    const contractMarket = {
+      id: 0,
+      question: info.question,
+      category: info.category || 'crypto',
+      outcomes: [info.option_a, info.option_b],
+      outcome_pools: [info.pool_a || 0, info.pool_b || 0],
+      total_volume: info.total_volume || 0,
+      resolved: info.resolved,
+      winning_index: info.winner === 'A' ? 0 : info.winner === 'B' ? 1 : -1,
+      reasoning: info.reasoning,
+      deadline: Math.floor(Date.now()/1000)+86400*180,
+      resolution_url: 'https://coinmarketcap.com/currencies/bitcoin/',
+      creator: info.creator || '',
+    };
+    markets = [contractMarket, ...DEMO_MARKETS.slice(1)];
+  } catch(e){
+    console.log('Contract read failed, using demo', e);
+    markets = DEMO_MARKETS;
+  }
+  updateStats();
+  renderMarkets();
+}
+
+function updateStats(){
+  const total = markets.length;
+  const resolved = markets.filter(m=>m.resolved).length;
+  const vol = markets.reduce((a,m)=>a+parseInt(m.total_volume||0),0);
+  document.getElementById('stat-markets').textContent = total;
+  document.getElementById('stat-resolved').textContent = resolved;
+  document.getElementById('stat-volume').textContent = (vol/1e18).toFixed(1)+' GEN';
+}
+
+function filterCat(cat, el){
+  currentFilter = cat;
+  document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderMarkets();
+}
+
+function renderMarkets(){
+  const grid = document.getElementById('markets-grid');
+  const filtered = currentFilter==='all' ? markets : markets.filter(m=>m.category===currentFilter);
+
+  if(!filtered.length){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <img src="zeth.png" style="width:120px;height:120px;object-fit:contain;filter:drop-shadow(0 0 20px #7c5cfc66);" />
+      <p>No markets in this category yet. <a href="#" onclick="showPage('create')" style="color:var(--accent2)">Create one!</a></p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(m => {
+    const pools = m.outcome_pools || [];
+    const total = pools.reduce((a,b)=>a+b,0)||1;
+    const colors = ['#7c5cfc','#22d3ee','#34d399','#fbbf24','#f87171','#f472b6','#a78bfa','#60a5fa'];
+    const barSegs = pools.map((p,i)=>`<div class="pool-bar-seg" style="width:${(p/total*100).toFixed(1)}%;background:${colors[i%colors.length]};"></div>`).join('');
+    const labels = m.outcomes.map((o,i)=>`<span>${o} ${(pools[i]/total*100).toFixed(0)}%</span>`).join('');
+    const now = Math.floor(Date.now()/1000);
+    const ended = now > m.deadline;
+    const catIcon = {crypto:'🪙',politics:'🏛️',sports:'⚽',tech:'🤖',culture:'🎭'}[m.category]||'📊';
+
+    return `<div class="market-card" onclick="openMarket(${m.id})">
+      <div class="market-card-cat cat-${m.category}">${catIcon} ${m.category}</div>
+      <div class="market-card-q">${m.question}</div>
+      <div class="market-pool-bar">
+        <div class="pool-labels">${labels}</div>
+        <div class="pool-bar-bg">${barSegs}</div>
+      </div>
+      <div class="market-card-footer">
+        <div class="market-vol">Vol <strong>${(parseInt(m.total_volume||0)/1e18).toFixed(0)} GEN</strong></div>
+        ${m.resolved
+          ? `<span class="badge-resolved">✓ Resolved</span>`
+          : ended
+            ? `<span class="badge-live" style="color:var(--yellow)">⏰ Ended</span>`
+            : `<span class="badge-live">● Live</span>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+// MARKET MODAL
+// ─────────────────────────────────────────────
+async function openMarket(id){
+  const m = markets.find(x=>x.id===id) || DEMO_MARKETS.find(x=>x.id===id);
+  if(!m) return;
+  currentMarket = m;
+  selectedOutcome = null;
+
+  const catIcon = {crypto:'🪙',politics:'🏛️',sports:'⚽',tech:'🤖',culture:'🎭'}[m.category]||'📊';
+  document.getElementById('modal-cat-badge').className = `market-card-cat cat-${m.category}`;
+  document.getElementById('modal-cat-badge').textContent = `${catIcon} ${m.category}`;
+  document.getElementById('modal-question').textContent = m.question;
+  document.getElementById('modal-url').href = m.resolution_url;
+  document.getElementById('modal-url').textContent = new URL(m.resolution_url).hostname;
+
+  const now = Math.floor(Date.now()/1000);
+  const ended = now > m.deadline;
+  document.getElementById('modal-deadline-text').textContent = ended
+    ? '⏰ Deadline passed'
+    : `⏱ Ends ${new Date(m.deadline*1000).toLocaleDateString()}`;
+
+  // Pool bars
+  const pools = m.outcome_pools || [];
+  const total = pools.reduce((a,b)=>a+b,0)||1;
+  const colors = ['#7c5cfc','#22d3ee','#34d399','#fbbf24','#f87171','#f472b6','#a78bfa','#60a5fa'];
+  document.getElementById('modal-pools').innerHTML = `
+    <div class="pool-bar-bg" style="height:10px;border-radius:6px;margin-bottom:8px;">
+      ${pools.map((p,i)=>`<div class="pool-bar-seg" style="width:${(p/total*100).toFixed(1)}%;background:${colors[i%colors.length]};"></div>`).join('')}
+    </div>
+    <div style="font-size:12px;color:var(--muted);text-align:right;">Total: ${(total/1e18).toFixed(0)} GEN</div>
+  `;
+
+  // Reasoning
+  if(m.resolved && m.reasoning){
+    document.getElementById('modal-reasoning').style.display='';
+    document.getElementById('modal-reasoning-text').textContent = m.reasoning;
+  } else {
+    document.getElementById('modal-reasoning').style.display='none';
+  }
+
+  // Outcomes
+  document.getElementById('modal-outcomes').innerHTML = m.outcomes.map((o,i)=>`
+    <button class="outcome-btn" id="out-${i}" onclick="selectOutcome(${i})">
+      <span>${o}</span>
+      <span class="outcome-pct">${(pools[i]/total*100).toFixed(0)}%</span>
+    </button>
+  `).join('');
+
+  // Show/hide sections
+  const betSection   = document.getElementById('modal-bet-section');
+  const claimSection = document.getElementById('modal-claim-section');
+  const resolveSection = document.getElementById('modal-resolve-section');
+
+  betSection.style.display   = 'none';
+  claimSection.style.display = 'none';
+  resolveSection.style.display = 'none';
+
+  // Check user's bet
+  if(wallet){
+    try{
+      const myBet = await glRead('get_my_bet',[id, wallet]);
+      if(myBet.has_bet){
+        claimSection.style.display = '';
+        document.getElementById('my-bet-info').textContent =
+          `You bet ${(myBet.amount/1e18).toFixed(2)} GEN on "${m.outcomes[myBet.outcome_index]}"`;
+        const claimBtn = document.getElementById('claim-btn');
+        if(m.resolved && m.winning_index === myBet.outcome_index && !myBet.claimed){
+          claimBtn.style.display='';
+        } else {
+          claimBtn.style.display='none';
+        }
+      } else if(!m.resolved && !ended){
+        betSection.style.display='';
+      }
+    } catch(e){
+      if(!m.resolved && !ended) betSection.style.display='';
+    }
+  } else {
+    if(!m.resolved && !ended) betSection.style.display='';
+  }
+
+  if(!m.resolved && ended){
+    resolveSection.style.display='';
+  }
+
+  document.getElementById('bet-status').style.display='none';
+  document.getElementById('resolve-status').style.display='none';
+  document.getElementById('claim-status').style.display='none';
+
+  document.getElementById('market-modal').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('market-modal').classList.remove('open');
+  currentMarket=null; selectedOutcome=null;
+}
+
+function selectOutcome(i){
+  selectedOutcome=i;
+  document.querySelectorAll('.outcome-btn').forEach((b,idx)=>{
+    b.classList.toggle('selected',idx===i);
+  });
+}
+
+function setStake(v){ document.getElementById('stake-amount').value=v; }
+
+// ─────────────────────────────────────────────
+// PLACE BET
+// ─────────────────────────────────────────────
+async function placeBet(){
+  if(selectedOutcome===null){ alert('Select an outcome first.'); return; }
+  const amount = parseFloat(document.getElementById('stake-amount').value||0);
+  if(amount<=0){ alert('Enter a stake amount.'); return; }
+  if(!wallet){ alert('Connect your wallet first.'); return; }
+
+  const statusEl = document.getElementById('bet-status');
+  const valueWei = (BigInt(Math.floor(amount*1e6))*BigInt(1e12)).toString();
+
+  try{
+    const hash = await glWrite('place_bet',[currentMarket.id, selectedOutcome], valueWei);
+    if(hash) await waitForTx(hash, statusEl);
+  } catch(e){
+    setStatus(statusEl,'error',e.message);
+  }
+}
+
+// ─────────────────────────────────────────────
+// RESOLVE MARKET
+// ─────────────────────────────────────────────
+async function resolveMarket(){
+  if(!wallet){ alert('Connect your wallet first.'); return; }
+  const statusEl = document.getElementById('resolve-status');
+  setStatus(statusEl,'pending','Submitting to AI validators...');
+  try{
+    const hash = await glWrite('resolve_market',[currentMarket.id]);
+    if(hash){
+      setStatus(statusEl,'pending','AI validators are fetching evidence and voting... this may take 30-60 seconds.');
+      await waitForTx(hash, statusEl);
+      await loadMarkets();
+    }
+  } catch(e){
+    setStatus(statusEl,'error',e.message);
+  }
+}
+
+// ─────────────────────────────────────────────
+// CLAIM WINNINGS
+// ─────────────────────────────────────────────
+async function claimWinnings(){
+  if(!wallet){ alert('Connect your wallet first.'); return; }
+  const statusEl = document.getElementById('claim-status');
+  try{
+    const hash = await glWrite('claim_winnings',[currentMarket.id]);
+    if(hash) await waitForTx(hash, statusEl);
+  } catch(e){
+    setStatus(statusEl,'error',e.message);
+  }
+}
+
+// ─────────────────────────────────────────────
+// CREATE MARKET
+// ─────────────────────────────────────────────
+async function createMarket(){
+  const q        = document.getElementById('f-question').value.trim();
+  const cat      = document.getElementById('f-category').value;
+  const url      = document.getElementById('f-url').value.trim();
+  const deadline = document.getElementById('f-deadline').value;
+  const outEls   = document.querySelectorAll('#outcomes-builder input');
+  const outcomes = Array.from(outEls).map(e=>e.value.trim()).filter(Boolean);
+
+  if(!q||!cat||!url||!deadline||outcomes.length<2){
+    alert('Please fill in all fields and add at least 2 outcomes.'); return;
+  }
+  if(!wallet){ alert('Connect your wallet first.'); return; }
+
+  const deadlineTs = Math.floor(new Date(deadline).getTime()/1000);
+  const statusEl = document.getElementById('create-status');
+  statusEl.style.display='flex';
+
+  try{
+    const hash = await glWrite('create_market',[q, cat, url, deadlineTs, outcomes]);
+    if(hash){
+      const ok = await waitForTx(hash, statusEl);
+      if(ok){
+        setTimeout(()=>{ showPage('home'); }, 1500);
+      }
+    }
+  } catch(e){
+    setStatus(statusEl,'error',e.message);
+  }
+}
+
+function addOutcome(){
+  const builder = document.getElementById('outcomes-builder');
+  const count = builder.children.length;
+  if(count>=8){ alert('Max 8 outcomes.'); return; }
+  const div = document.createElement('div');
+  div.className='outcome-input-row';
+  div.innerHTML=`<input class="form-input" placeholder="Outcome ${count+1}"/><button class="remove-outcome" onclick="removeOutcome(this)">×</button>`;
+  builder.appendChild(div);
+}
+
+function removeOutcome(btn){
+  const builder = document.getElementById('outcomes-builder');
+  if(builder.children.length<=2){ alert('Need at least 2 outcomes.'); return; }
+  btn.parentElement.remove();
+}
+
+// ─────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────
+function setStatus(el, type, msg){
+  el.style.display='flex';
+  el.className='tx-status tx-'+type;
+  el.innerHTML = type==='pending'
+    ? `<span class="spinner"></span>${msg}`
+    : `<span>${type==='success'?'✓':'✗'}</span>${msg}`;
+}
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// Close modal on overlay click
+document.getElementById('market-modal').addEventListener('click',function(e){
+  if(e.target===this) closeModal();
+});
+
+// ─────────────────────────────────────────────
+// ANIMATED BACKGROUND — floating particles
+// ─────────────────────────────────────────────
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+function resize(){
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+function randomParticle(){
+  return {
+    x: Math.random() * W,
+    y: Math.random() * H,
+    r: Math.random() * 1.5 + 0.3,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    a: Math.random(),
+    color: Math.random() > 0.5 ? '#7c5cfc' : '#22d3ee',
+  };
+}
+
+for(let i=0;i<120;i++) particles.push(randomParticle());
+
+function drawFrame(){
+  ctx.clearRect(0,0,W,H);
+  particles.forEach((p,i) => {
+    p.x += p.vx; p.y += p.vy;
+    if(p.x<0) p.x=W; if(p.x>W) p.x=0;
+    if(p.y<0) p.y=H; if(p.y>H) p.y=0;
+
+    // draw dot
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fillStyle = p.color + Math.floor(p.a*80).toString(16).padStart(2,'0');
+    ctx.fill();
+
+    // draw lines to nearby particles
+    for(let j=i+1;j<particles.length;j++){
+      const q = particles[j];
+      const dx = p.x-q.x, dy = p.y-q.y;
+      const dist = Math.sqrt(dx*dx+dy*dy);
+      if(dist < 100){
+        ctx.beginPath();
+        ctx.moveTo(p.x,p.y);
+        ctx.lineTo(q.x,q.y);
+        ctx.strokeStyle = '#7c5cfc' + Math.floor((1-dist/100)*18).toString(16).padStart(2,'0');
+        ctx.lineWidth = 0.4;
+        ctx.stroke();
+      }
+    }
+  });
+  requestAnimationFrame(drawFrame);
+}
+drawFrame();
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+loadMarkets();
+</script>
+</body>
+</html>
