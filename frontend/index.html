@@ -111,6 +111,21 @@ nav{
 }
 .hero-ctas{display:flex;gap:12px;flex-wrap:wrap;}
 
+/* ── REFRESH BUTTON ANIMATION ── */
+.refresh-btn{ transition: all .15s; }
+.refresh-btn:active{ transform: scale(0.95); }
+.refresh-icon{
+  display:inline-block;
+  transition: transform .5s ease;
+}
+.refresh-btn.spinning .refresh-icon{
+  animation: spin-refresh .6s linear;
+}
+@keyframes spin-refresh{
+  from{ transform: rotate(0deg); }
+  to{ transform: rotate(360deg); }
+}
+
 /* ── BUTTONS ── */
 .btn{
   padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;
@@ -123,6 +138,11 @@ nav{
 .btn-outline:hover{background:var(--bg3);border-color:var(--border2);}
 
 /* ── MASCOT SCENE ── */
+.mascot-scroll-wrap{
+  position:relative;
+  transition: transform .05s linear, opacity .05s linear;
+  will-change: transform, opacity;
+}
 .mascot-scene{
   position:relative;
   width:380px;height:380px;
@@ -167,6 +187,49 @@ nav{
 .mascot-badge-1{top:40px;right:20px;animation-delay:.5s;color:var(--accent2);}
 .mascot-badge-2{top:50%;left:0;transform:translateY(-50%);animation-delay:1s;color:var(--green);}
 .mascot-badge-3{bottom:60px;right:10px;animation-delay:1.5s;color:var(--yellow);}
+
+/* tilted floating preview cards (scroll-reactive) */
+.float-card{
+  position:absolute;z-index:1;
+  width:140px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:12px;padding:10px;
+  box-shadow:0 12px 40px #00000060;
+  transition: transform .08s linear, opacity .08s linear;
+  will-change: transform, opacity;
+  pointer-events:none;
+}
+.float-card-1{
+  top:-30px;left:-60px;
+  transform: rotate(-10deg);
+  animation: shake-1 6s ease-in-out infinite;
+}
+.float-card-2{
+  bottom:-20px;right:-70px;
+  transform: rotate(8deg);
+  animation: shake-2 7s ease-in-out infinite;
+}
+@keyframes shake-1{
+  0%,100%{transform:rotate(-10deg) translateY(0);}
+  50%{transform:rotate(-7deg) translateY(-8px);}
+}
+@keyframes shake-2{
+  0%,100%{transform:rotate(8deg) translateY(0);}
+  50%{transform:rotate(11deg) translateY(-6px);}
+}
+.float-card-cat{
+  font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--accent2);margin-bottom:4px;
+}
+.float-card-q{
+  font-size:11px;font-weight:600;line-height:1.3;color:var(--text);
+  margin-bottom:6px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.float-card-pct{
+  font-size:10px;color:var(--muted2);display:flex;justify-content:space-between;
+}
+.float-card-pct strong{color:var(--green);}
 
 @media(max-width:768px){
   .hero-inner{flex-direction:column;text-align:center;}
@@ -447,6 +510,7 @@ footer a{color:var(--accent2);text-decoration:none;}
   <div class="nav-links">
     <a class="nav-btn nav-btn-ghost" href="#" onclick="showPage('home')">Markets</a>
     <a class="nav-btn nav-btn-ghost" href="#" onclick="showPage('create')">Create</a>
+    <a class="nav-btn nav-btn-ghost" href="#" onclick="showPage('mybets')">My Bets</a>
     <div class="wallet-addr" id="wallet-display">Not connected</div>
     <button class="nav-btn nav-btn-primary" onclick="connectWallet()" id="connect-btn">Connect Wallet</button>
   </div>
@@ -476,17 +540,31 @@ footer a{color:var(--accent2);text-decoration:none;}
       </div>
       <!-- RIGHT: mascot -->
       <div class="hero-right">
-        <div class="mascot-scene">
-          <div class="mascot-ring mascot-ring-1"></div>
-          <div class="mascot-ring mascot-ring-2"></div>
-          <div class="mascot-ring mascot-ring-3"></div>
-          <div class="mascot-glow"></div>
-          <img class="mascot-img" src="zeth.png" alt="Zeitgeist AI mascot"
-            onerror="this.outerHTML='<div style=\'font-size:120px;text-align:center;\'>🐱</div>'"
-          />
-          <div class="mascot-badge mascot-badge-1">🤖 AI Judge</div>
-          <div class="mascot-badge mascot-badge-2">⚡ Live</div>
-          <div class="mascot-badge mascot-badge-3">🏆 Win</div>
+        <div class="mascot-scroll-wrap" id="mascot-scroll-wrap">
+          <div class="mascot-scene">
+            <div class="mascot-ring mascot-ring-1"></div>
+            <div class="mascot-ring mascot-ring-2"></div>
+            <div class="mascot-ring mascot-ring-3"></div>
+            <div class="mascot-glow"></div>
+            <img class="mascot-img" src="zeth.png" alt="Zeitgeist AI mascot"
+              onerror="this.outerHTML='<div style=\'font-size:120px;text-align:center;\'>🐱</div>'"
+            />
+            <div class="mascot-badge mascot-badge-1">🤖 AI Judge</div>
+            <div class="mascot-badge mascot-badge-2">⚡ Live</div>
+            <div class="mascot-badge mascot-badge-3">🏆 Win</div>
+
+            <!-- floating tilted market preview cards -->
+            <div class="float-card float-card-1">
+              <div class="float-card-cat">🪙 Crypto</div>
+              <div class="float-card-q">Will Bitcoin close above $200,000?</div>
+              <div class="float-card-pct">Yes <strong>64%</strong></div>
+            </div>
+            <div class="float-card float-card-2">
+              <div class="float-card-cat">⚽ Sports</div>
+              <div class="float-card-q">Who wins the 2026 FIFA World Cup?</div>
+              <div class="float-card-pct">Brazil <strong>30%</strong></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -516,7 +594,9 @@ footer a{color:var(--accent2);text-decoration:none;}
   <main id="markets-section">
     <div class="section-header">
       <span class="section-title">🔥 Active Markets</span>
-      <button class="btn btn-outline" style="padding:8px 16px;font-size:13px;" onclick="loadMarkets()">↻ Refresh</button>
+      <button class="btn btn-outline refresh-btn" id="refresh-btn" style="padding:8px 16px;font-size:13px;" onclick="loadMarkets()">
+        <span class="refresh-icon">↻</span> Refresh
+      </button>
     </div>
 
     <div class="cat-tabs">
@@ -530,6 +610,17 @@ footer a{color:var(--accent2);text-decoration:none;}
 
     <div class="markets-grid" id="markets-grid">
       <!-- populated by JS -->
+    </div>
+
+    <!-- RESOLVED MARKETS SECTION -->
+    <div id="resolved-section" style="display:none;margin-top:2.5rem;">
+      <div class="section-header" style="cursor:pointer;" onclick="toggleResolvedSection()">
+        <span class="section-title">✅ Resolved Markets <span id="resolved-count" style="color:var(--muted2);font-weight:400;font-size:13px;"></span></span>
+        <span id="resolved-toggle-icon" style="font-size:13px;color:var(--muted2);">▾ Show</span>
+      </div>
+      <div class="markets-grid" id="resolved-grid" style="display:none;">
+        <!-- populated by JS -->
+      </div>
     </div>
   </main>
 
@@ -573,7 +664,7 @@ footer a{color:var(--accent2);text-decoration:none;}
       </div>
 
       <div class="form-group">
-        <label class="form-label">Outcomes * <span style="color:var(--muted);font-weight:400;">(min 2, max 8)</span></label>
+        <label class="form-label">Outcomes * <span style="color:var(--muted);font-weight:400;">(2 to 8 — e.g. Yes/No, or Brazil/France/Argentina...)</span></label>
         <div class="outcomes-builder" id="outcomes-builder">
           <div class="outcome-input-row">
             <input class="form-input" placeholder="Outcome 1 e.g. Yes" value="Yes"/>
@@ -595,6 +686,22 @@ footer a{color:var(--accent2);text-decoration:none;}
 
       <div id="create-status" style="display:none;" class="tx-status"></div>
 
+    </div>
+  </main>
+</div>
+
+<!-- ── PAGE: MY BETS ── -->
+<div id="page-mybets" style="display:none;">
+  <main style="max-width:720px;">
+    <div style="margin-bottom:2rem;">
+      <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:.5rem;">📋 My Bets</h2>
+      <p style="color:var(--muted2);font-size:14px;">All your active and resolved bets on Zeitgeist AI.</p>
+    </div>
+    <div id="mybets-list" style="display:flex;flex-direction:column;gap:12px;">
+      <div class="empty-state">
+        <img src="zeth.png" style="width:100px;height:100px;object-fit:contain;opacity:.6;" />
+        <p>Connect your wallet to see your bets.</p>
+      </div>
     </div>
   </main>
 </div>
@@ -688,7 +795,7 @@ footer a{color:var(--accent2);text-decoration:none;}
 // CONFIG
 // ─────────────────────────────────────────────
 const CONFIG = {
-  CONTRACT_ADDRESS: '0x8Bb2affa4fe21b9ad46716EB744Ac3797C29D884',
+  CONTRACT_ADDRESS: '0xDcb5dB0D44E8e860172d301eEb0F444Efdc306B7',
   RPC_URL: 'https://studio.genlayer.com/api',
   CHAIN_ID: 61999,
 };
@@ -771,8 +878,9 @@ async function connectWallet(){
     return;
   }
   try{
+    // eth_requestAccounts triggers MetaMask popup if not already connected
     const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
-    wallet = accounts[0];
+    wallet = window.toChecksumAddress ? window.toChecksumAddress(accounts[0]) : accounts[0];
     // Switch to GenLayer Studionet
     try{
       await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0xF22F'}]});
@@ -796,68 +904,53 @@ async function connectWallet(){
 // GENLAYER JS HELPERS (simplified RPC wrappers)
 // ─────────────────────────────────────────────
 async function glRead(functionName, args=[]){
-  const resp = await fetch(CONFIG.RPC_URL, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      jsonrpc:'2.0', id:1, method:'gen_call',
-      params:[{
-        to: CONFIG.CONTRACT_ADDRESS,
-        data: JSON.stringify({method: functionName, args}),
-      },'latest']
-    })
+  if(!window.glReadClient) throw new Error('GenLayer SDK not loaded yet');
+  const result = await window.glReadClient.readContract({
+    address: CONFIG.CONTRACT_ADDRESS,
+    functionName: functionName,
+    args: args,
   });
-  const data = await resp.json();
-  if(data.error) throw new Error(data.error.message);
-  return JSON.parse(data.result);
+  return result;
 }
 
 async function glWrite(functionName, args=[], valueWei='0'){
   if(!wallet){ alert('Connect your wallet first.'); return null; }
+  if(!window.GLSDK){ alert('GenLayer SDK still loading, try again in a second.'); return null; }
   try{
-    // Encode data as hex for GenLayer
-    const jsonData = JSON.stringify({method: functionName, args: args});
-    const encoded = '0x' + Array.from(new TextEncoder().encode(jsonData))
-      .map(b => b.toString(16).padStart(2,'0')).join('');
-
-    const txHash = await window.ethereum.request({
-      method:'eth_sendTransaction',
-      params:[{
-        from: wallet,
-        to: CONFIG.CONTRACT_ADDRESS,
-        data: encoded,
-        value: '0x'+BigInt(valueWei).toString(16),
-        gas: '0x7A120',
-      }]
+    const client = window.GLSDK.createClient({
+      chain: window.GLSDK.studionet,
+      account: wallet,
+    });
+    await client.connect("studionet");
+    const txHash = await client.writeContract({
+      address: CONFIG.CONTRACT_ADDRESS,
+      functionName: functionName,
+      args: args,
+      value: BigInt(valueWei),
     });
     return txHash;
   } catch(e){
-    console.error('glWrite error:',e);
+    console.error('glWrite error:', e);
     throw e;
   }
 }
 
 async function waitForTx(hash, statusEl){
-  setStatus(statusEl,'pending','Waiting for validators...');
-  let tries = 0;
-  while(tries < 60){
-    await sleep(3000);
-    try{
-      const resp = await fetch(CONFIG.RPC_URL,{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_getTransactionReceipt',params:[hash]})
-      });
-      const data = await resp.json();
-      if(data.result && data.result.status){
-        const ok = data.result.status === '0x1';
-        setStatus(statusEl, ok?'success':'error', ok?'Transaction finalized!':'Transaction failed.');
-        return ok;
-      }
-    } catch(e){}
-    tries++;
+  setStatus(statusEl,'pending','Waiting for AI validators...');
+  try{
+    await window.glReadClient.waitForTransactionReceipt({
+      hash: hash,
+      status: 'ACCEPTED',
+      interval: 3000,
+      retries: 40,
+    });
+    setStatus(statusEl,'success','Transaction confirmed!');
+    return true;
+  } catch(e){
+    console.error(e);
+    setStatus(statusEl,'error','Transaction failed or timed out.');
+    return false;
   }
-  setStatus(statusEl,'error','Timed out waiting for confirmation.');
-  return false;
 }
 
 // ─────────────────────────────────────────────
@@ -866,35 +959,62 @@ async function waitForTx(hash, statusEl){
 function showPage(page){
   document.getElementById('page-home').style.display   = page==='home'   ? '' : 'none';
   document.getElementById('page-create').style.display = page==='create' ? '' : 'none';
+  document.getElementById('page-mybets').style.display = page==='mybets' ? '' : 'none';
   if(page==='home') loadMarkets();
+  if(page==='mybets') loadMyBets();
 }
 
 // ─────────────────────────────────────────────
 // LOAD MARKETS
 // ─────────────────────────────────────────────
-async function loadMarkets(){
-  // Try contract first, fall back to demo data
-  try{
-    const info = await glRead('get_info',[]);
-    const contractMarket = {
-      id: 0,
-      question: info.question,
-      category: info.category || 'crypto',
-      outcomes: [info.option_a, info.option_b],
-      outcome_pools: [info.pool_a || 0, info.pool_b || 0],
-      total_volume: info.total_volume || 0,
-      resolved: info.resolved,
-      winning_index: info.winner === 'A' ? 0 : info.winner === 'B' ? 1 : -1,
-      reasoning: info.reasoning,
-      deadline: Math.floor(Date.now()/1000)+86400*180,
-      resolution_url: 'https://coinmarketcap.com/currencies/bitcoin/',
-      creator: info.creator || '',
-    };
-    markets = [contractMarket, ...DEMO_MARKETS.slice(1)];
-  } catch(e){
-    console.log('Contract read failed, using demo', e);
-    markets = DEMO_MARKETS;
+async function loadMarkets(retryCount=0){
+  const btn = document.getElementById('refresh-btn');
+  if(btn){
+    btn.classList.add('spinning');
+    setTimeout(()=>btn.classList.remove('spinning'), 600);
   }
+
+  // Wait for SDK to be ready (retry up to 10 times, 200ms apart) before falling back to demo
+  if(!window.glReadClient && retryCount < 10){
+    if(retryCount === 0){
+      document.getElementById('markets-grid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted2);">Loading markets from GenLayer...</div>`;
+    }
+    setTimeout(()=>loadMarkets(retryCount+1), 200);
+    return;
+  }
+
+  // Load ALL markets from the multi-market contract
+  try{
+    const count = Number(await glRead('get_market_count',[]));
+    if(count > 0){
+      const loaded = [];
+      for(let i=0;i<Math.min(count,50);i++){
+        const m = await glRead('get_market',[i]);
+        loaded.push({
+          id: Number(m.id),
+          question: m.question,
+          category: m.category,
+          outcomes: m.outcomes,
+          outcome_pools: m.outcome_pools.map(Number),
+          total_volume: Number(m.total_volume),
+          resolved: m.resolved,
+          winning_index: Number(m.winning_index),
+          reasoning: m.reasoning,
+          deadline: Number(m.deadline),
+          resolution_url: m.resolution_url,
+          creator: m.creator,
+          onchain: true,
+        });
+      }
+      markets = loaded;
+      updateStats();
+      renderMarkets();
+      return;
+    }
+  } catch(e){
+    console.log('Contract read failed, using demo data', e);
+  }
+  markets = DEMO_MARKETS;
   updateStats();
   renderMarkets();
 }
@@ -917,17 +1037,41 @@ function filterCat(cat, el){
 
 function renderMarkets(){
   const grid = document.getElementById('markets-grid');
-  const filtered = currentFilter==='all' ? markets : markets.filter(m=>m.category===currentFilter);
+  const resolvedSection = document.getElementById('resolved-section');
+  const resolvedGrid = document.getElementById('resolved-grid');
+  const resolvedCount = document.getElementById('resolved-count');
 
-  if(!filtered.length){
+  const catFiltered = currentFilter==='all' ? markets : markets.filter(m=>m.category===currentFilter);
+  const active = catFiltered.filter(m => !m.resolved);
+  const resolved = catFiltered.filter(m => m.resolved);
+
+  if(!active.length){
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
       <img src="zeth.png" style="width:120px;height:120px;object-fit:contain;filter:drop-shadow(0 0 20px #7c5cfc66);" />
-      <p>No markets in this category yet. <a href="#" onclick="showPage('create')" style="color:var(--accent2)">Create one!</a></p>
+      <p>No active markets in this category yet. <a href="#" onclick="showPage('create')" style="color:var(--accent2)">Create one!</a></p>
     </div>`;
-    return;
+  } else {
+    grid.innerHTML = active.map(m => renderMarketCard(m)).join('');
   }
 
-  grid.innerHTML = filtered.map(m => {
+  if(resolved.length){
+    resolvedSection.style.display = '';
+    resolvedCount.textContent = `(${resolved.length})`;
+    resolvedGrid.innerHTML = resolved.map(m => renderMarketCard(m)).join('');
+  } else {
+    resolvedSection.style.display = 'none';
+  }
+}
+
+function toggleResolvedSection(){
+  const grid = document.getElementById('resolved-grid');
+  const icon = document.getElementById('resolved-toggle-icon');
+  const isHidden = grid.style.display === 'none';
+  grid.style.display = isHidden ? '' : 'none';
+  icon.textContent = isHidden ? '▴ Hide' : '▾ Show';
+}
+
+function renderMarketCard(m){
     const pools = m.outcome_pools || [];
     const total = pools.reduce((a,b)=>a+b,0)||1;
     const colors = ['#7c5cfc','#22d3ee','#34d399','#fbbf24','#f87171','#f472b6','#a78bfa','#60a5fa'];
@@ -936,6 +1080,17 @@ function renderMarkets(){
     const now = Math.floor(Date.now()/1000);
     const ended = now > m.deadline;
     const catIcon = {crypto:'🪙',politics:'🏛️',sports:'⚽',tech:'🤖',culture:'🎭'}[m.category]||'📊';
+
+    let statusBadge;
+    if(m.resolved){
+      statusBadge = m.winning_index === -1
+        ? `<span class="badge-resolved" style="color:var(--muted2);">✓ Resolved · Undetermined</span>`
+        : `<span class="badge-resolved">✓ Resolved</span>`;
+    } else if(ended){
+      statusBadge = `<span class="badge-live" style="color:var(--yellow)">⏰ Ended</span>`;
+    } else {
+      statusBadge = `<span class="badge-live">● Live</span>`;
+    }
 
     return `<div class="market-card" onclick="openMarket(${m.id})">
       <div class="market-card-cat cat-${m.category}">${catIcon} ${m.category}</div>
@@ -946,14 +1101,9 @@ function renderMarkets(){
       </div>
       <div class="market-card-footer">
         <div class="market-vol">Vol <strong>${(parseInt(m.total_volume||0)/1e18).toFixed(0)} GEN</strong></div>
-        ${m.resolved
-          ? `<span class="badge-resolved">✓ Resolved</span>`
-          : ended
-            ? `<span class="badge-live" style="color:var(--yellow)">⏰ Ended</span>`
-            : `<span class="badge-live">● Live</span>`}
+        ${statusBadge}
       </div>
     </div>`;
-  }).join('');
 }
 
 // ─────────────────────────────────────────────
@@ -1130,6 +1280,7 @@ async function createMarket(){
   if(!q||!cat||!url||!deadline||outcomes.length<2){
     alert('Please fill in all fields and add at least 2 outcomes.'); return;
   }
+  if(outcomes.length>8){ alert('Max 8 outcomes.'); return; }
   if(!wallet){ alert('Connect your wallet first.'); return; }
 
   const deadlineTs = Math.floor(new Date(deadline).getTime()/1000);
@@ -1137,7 +1288,7 @@ async function createMarket(){
   statusEl.style.display='flex';
 
   try{
-    const hash = await glWrite('create_market',[q, cat, url, deadlineTs, outcomes]);
+    const hash = await glWrite('create_market',[q, cat, url, JSON.stringify(outcomes), deadlineTs]);
     if(hash){
       const ok = await waitForTx(hash, statusEl);
       if(ok){
@@ -1163,6 +1314,85 @@ function removeOutcome(btn){
   const builder = document.getElementById('outcomes-builder');
   if(builder.children.length<=2){ alert('Need at least 2 outcomes.'); return; }
   btn.parentElement.remove();
+}
+
+// ─────────────────────────────────────────────
+// MY BETS PAGE
+// ─────────────────────────────────────────────
+async function loadMyBets(){
+  const list = document.getElementById('mybets-list');
+  if(!wallet){
+    list.innerHTML = `<div class="empty-state">
+      <img src="zeth.png" style="width:100px;height:100px;object-fit:contain;opacity:.6;" />
+      <p>Connect your wallet to see your bets.</p>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--muted2);">Loading your bets...</div>`;
+
+  try{
+    const count = Number(await glRead('get_market_count',[]));
+    const cards = [];
+
+    for(let i=0;i<Math.min(count,50);i++){
+      const bet = await glRead('get_my_bet',[i, wallet]);
+      if(!bet.has_bet) continue;
+
+      const m = await glRead('get_market',[i]);
+      const myOption = m.outcomes[Number(bet.outcome_index)];
+      const amountGen = (Number(bet.amount)/1e18).toFixed(2);
+
+      let statusBadge, actionBtn = '';
+      if(!m.resolved){
+        statusBadge = `<span class="badge-live">● Live</span>`;
+      } else if(Number(m.winning_index) === Number(bet.outcome_index) && !bet.claimed){
+        statusBadge = `<span class="badge-resolved">🏆 You Won!</span>`;
+        actionBtn = `<button class="btn btn-primary" style="padding:8px 18px;font-size:13px;margin-top:10px;" onclick="claimFromList(${i})">Claim Winnings</button>
+        <div id="claim-list-status-${i}" style="display:none;" class="tx-status"></div>`;
+      } else if(Number(m.winning_index) === Number(bet.outcome_index) && bet.claimed){
+        statusBadge = `<span class="badge-resolved">✓ Claimed</span>`;
+      } else {
+        statusBadge = `<span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;background:var(--red)20;color:var(--red);border:1px solid var(--red)40;">✗ Lost</span>`;
+      }
+
+      cards.push(`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:1.25rem;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;">
+          <div style="font-weight:600;font-size:.95rem;line-height:1.4;">${m.question}</div>
+          ${statusBadge}
+        </div>
+        <div style="display:flex;gap:24px;font-size:13px;color:var(--muted2);">
+          <span>Your pick: <strong style="color:var(--accent2)">${myOption}</strong></span>
+          <span>Staked: <strong style="color:var(--text)">${amountGen} GEN</strong></span>
+        </div>
+        ${m.resolved && m.reasoning ? `<div class="reasoning-box" style="margin-top:10px;margin-bottom:0;"><strong>🤖 AI Verdict</strong>${m.reasoning}</div>` : ''}
+        ${actionBtn}
+      </div>`);
+    }
+
+    list.innerHTML = cards.length
+      ? cards.join('')
+      : `<div class="empty-state">
+          <img src="zeth.png" style="width:100px;height:100px;object-fit:contain;opacity:.6;" />
+          <p>No bets yet. <a href="#" onclick="showPage('home')" style="color:var(--accent2)">Browse markets!</a></p>
+        </div>`;
+  } catch(e){
+    console.error(e);
+    list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--red);">Failed to load bets. Try again.</div>`;
+  }
+}
+
+async function claimFromList(marketId){
+  const statusEl = document.getElementById('claim-list-status-'+marketId);
+  try{
+    const hash = await glWrite('claim_winnings',[marketId]);
+    if(hash){
+      const ok = await waitForTx(hash, statusEl);
+      if(ok) loadMyBets();
+    }
+  } catch(e){
+    setStatus(statusEl,'error',e.message);
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -1244,9 +1474,95 @@ function drawFrame(){
 drawFrame();
 
 // ─────────────────────────────────────────────
+// PERSIST WALLET CONNECTION ON REFRESH
+// ─────────────────────────────────────────────
+async function checkExistingWalletConnection(){
+  if(typeof window.ethereum === 'undefined') return;
+  try{
+    // eth_accounts does NOT trigger a popup - just checks existing authorization
+    const accounts = await window.ethereum.request({method:'eth_accounts'});
+    if(accounts && accounts.length > 0){
+      wallet = window.toChecksumAddress ? window.toChecksumAddress(accounts[0]) : accounts[0];
+      document.getElementById('wallet-display').textContent = wallet.slice(0,6)+'...'+wallet.slice(-4);
+      document.getElementById('connect-btn').textContent = 'Connected';
+      document.getElementById('connect-btn').style.background = '#1a2e1a';
+      document.getElementById('connect-btn').style.color = 'var(--green)';
+    }
+  } catch(e){
+    console.log('No existing wallet connection:', e);
+  }
+}
+
+// Listen for account changes (disconnect/switch in MetaMask)
+if(typeof window.ethereum !== 'undefined'){
+  window.ethereum.on('accountsChanged', (accounts) => {
+    if(accounts.length === 0){
+      wallet = null;
+      document.getElementById('wallet-display').textContent = 'Not connected';
+      document.getElementById('connect-btn').textContent = 'Connect Wallet';
+      document.getElementById('connect-btn').style.background = '';
+      document.getElementById('connect-btn').style.color = '';
+    } else {
+      wallet = window.toChecksumAddress ? window.toChecksumAddress(accounts[0]) : accounts[0];
+      document.getElementById('wallet-display').textContent = wallet.slice(0,6)+'...'+wallet.slice(-4);
+      document.getElementById('connect-btn').textContent = 'Connected';
+      document.getElementById('connect-btn').style.background = '#1a2e1a';
+      document.getElementById('connect-btn').style.color = 'var(--green)';
+    }
+  });
+}
+
+checkExistingWalletConnection();
+
+// ─────────────────────────────────────────────
+// SCROLL-DRIVEN HERO MASCOT EFFECT
+// ─────────────────────────────────────────────
+(function(){
+  const wrap = document.getElementById('mascot-scroll-wrap');
+  if(!wrap) return;
+  const heroEl = document.querySelector('.hero');
+
+  function onScroll(){
+    if(!heroEl) return;
+    const heroHeight = heroEl.offsetHeight || 600;
+    const scrollY = window.scrollY || window.pageYOffset;
+    // progress: 0 at top, 1 once scrolled past hero height
+    let progress = scrollY / heroHeight;
+    progress = Math.max(0, Math.min(1, progress));
+
+    // scale from 1 -> 0.55, fade from 1 -> 0
+    const scale = 1 - progress * 0.45;
+    const opacity = 1 - progress;
+    const translateY = progress * -40;
+
+    wrap.style.transform = `scale(${scale}) translateY(${translateY}px)`;
+    wrap.style.opacity = opacity;
+  }
+
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+
+// ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
 loadMarkets();
+</script>
+<script type="module">
+  // Load official GenLayerJS SDK
+  try{
+    const sdk = await import('https://esm.sh/genlayer-js');
+    const chains = await import('https://esm.sh/genlayer-js/chains');
+    const viem = await import('https://esm.sh/viem');
+    window.toChecksumAddress = viem.getAddress;
+    window.GLSDK = { createClient: sdk.createClient, studionet: chains.studionet };
+    window.glReadClient = sdk.createClient({ chain: chains.studionet });
+    console.log('GenLayerJS SDK loaded ✓');
+    // Reload markets now that SDK is ready
+    if(window.loadMarkets) window.loadMarkets();
+  } catch(e){
+    console.error('Failed to load GenLayerJS SDK:', e);
+  }
 </script>
 </body>
 </html>
