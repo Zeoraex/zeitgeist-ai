@@ -284,6 +284,30 @@ nav{
   .section-title{ font-size:1rem; }
 }
 
+/* ── WALLET DROPDOWN ── */
+.wallet-dropdown-wrap{position:relative;display:inline-block;}
+.wallet-dropdown{
+  display:none;position:absolute;right:0;top:calc(100% + 8px);
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:12px;padding:8px;min-width:200px;
+  box-shadow:0 8px 32px #00000060;z-index:999;
+}
+.wallet-dropdown.open{display:block;}
+.wallet-dropdown-addr{
+  font-size:12px;color:var(--muted2);padding:8px 10px;
+  border-bottom:1px solid var(--border);margin-bottom:6px;
+  word-break:break-all;
+}
+.wallet-dropdown-btn{
+  display:flex;align-items:center;gap:8px;
+  width:100%;padding:8px 10px;border-radius:8px;
+  background:none;border:none;color:var(--text);
+  font-size:13px;cursor:pointer;text-align:left;
+  transition:background .15s;
+}
+.wallet-dropdown-btn:hover{background:var(--bg2);}
+.wallet-dropdown-btn.disconnect{color:#f87171;}
+
 /* ── ANIMATED BACKGROUND CANVAS ── */
 #bg-canvas{
   position:fixed;top:0;left:0;
@@ -557,8 +581,14 @@ footer a{color:var(--accent2);text-decoration:none;}
     <a class="nav-btn nav-btn-ghost" href="#" onclick="showPage('home')">Markets</a>
     <a class="nav-btn nav-btn-ghost" href="#" onclick="showPage('create')">Create</a>
     <a class="nav-btn nav-btn-ghost" href="#" onclick="showPage('mybets')">My Bets</a>
-    <div class="wallet-addr" id="wallet-display">Not connected</div>
-    <button class="nav-btn nav-btn-primary" onclick="connectWallet()" id="connect-btn">Connect Wallet</button>
+    <div class="wallet-dropdown-wrap" id="wallet-dropdown-wrap">
+      <button class="nav-btn nav-btn-primary" onclick="toggleWalletDropdown()" id="connect-btn">Connect Wallet</button>
+      <div class="wallet-dropdown" id="wallet-dropdown">
+        <div class="wallet-dropdown-addr" id="wallet-display">Not connected</div>
+        <button class="wallet-dropdown-btn" onclick="copyWalletAddress()">📋 Copy Address</button>
+        <button class="wallet-dropdown-btn disconnect" onclick="disconnectWallet()">🔌 Disconnect</button>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -918,6 +948,42 @@ const DEMO_MARKETS = [
 // ─────────────────────────────────────────────
 // WALLET
 // ─────────────────────────────────────────────
+function toggleWalletDropdown(){
+  if(!wallet){
+    connectWallet();
+    return;
+  }
+  const dd = document.getElementById('wallet-dropdown');
+  dd.classList.toggle('open');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e){
+  const wrap = document.getElementById('wallet-dropdown-wrap');
+  if(wrap && !wrap.contains(e.target)){
+    document.getElementById('wallet-dropdown').classList.remove('open');
+  }
+});
+
+function copyWalletAddress(){
+  if(wallet){
+    navigator.clipboard.writeText(wallet);
+    const btn = document.querySelector('.wallet-dropdown-btn');
+    btn.textContent = '✅ Copied!';
+    setTimeout(()=>{ btn.textContent = '📋 Copy Address'; }, 1500);
+  }
+  document.getElementById('wallet-dropdown').classList.remove('open');
+}
+
+function disconnectWallet(){
+  wallet = null;
+  document.getElementById('wallet-display').textContent = 'Not connected';
+  document.getElementById('connect-btn').textContent = 'Connect Wallet';
+  document.getElementById('connect-btn').style.background = '';
+  document.getElementById('connect-btn').style.color = '';
+  document.getElementById('wallet-dropdown').classList.remove('open');
+}
+
 async function connectWallet(){
   if(typeof window.ethereum === 'undefined'){
     alert('MetaMask not found!');
@@ -1592,7 +1658,11 @@ checkExistingWalletConnection();
 // ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
-loadMarkets();
+// Show loading state immediately — don't show demo data while SDK loads
+document.getElementById('markets-grid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted2);">
+  <div style="font-size:2rem;margin-bottom:.5rem;">⏳</div>
+  Loading markets from GenLayer...
+</div>`;
 </script>
 <script type="module">
   // Load official GenLayerJS SDK
@@ -1605,7 +1675,7 @@ loadMarkets();
     window.glReadClient = sdk.createClient({ chain: chains.studionet });
     console.log('GenLayerJS SDK loaded ✓');
     // Reload markets now that SDK is ready
-    if(window.loadMarkets) window.loadMarkets();
+    if(window.loadMarkets){ window.loadMarkets(); }
   } catch(e){
     console.error('Failed to load GenLayerJS SDK:', e);
   }
