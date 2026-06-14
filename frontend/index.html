@@ -284,6 +284,35 @@ nav{
   .section-title{ font-size:1rem; }
 }
 
+/* ── TOAST NOTIFICATIONS ── */
+#toast-container{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  z-index:9999;display:flex;flex-direction:column;gap:10px;align-items:center;
+  pointer-events:none;
+}
+.toast{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:12px;padding:12px 20px;
+  font-size:14px;font-weight:500;color:var(--text);
+  box-shadow:0 8px 32px #00000080;
+  display:flex;align-items:center;gap:10px;
+  animation:toast-in .25s ease;
+  pointer-events:all;
+  max-width:320px;text-align:center;
+}
+.toast.success{border-color:#34d39960;background:#0d1f18;}
+.toast.error{border-color:#f8717160;background:#1f0d0d;}
+.toast.info{border-color:#7c5cfc60;background:#13101f;}
+.toast.warning{border-color:#fbbf2460;background:#1f1a0d;}
+@keyframes toast-in{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes toast-out{
+  from{opacity:1;transform:translateY(0);}
+  to{opacity:0;transform:translateY(20px);}
+}
+
 /* ── WALLET DROPDOWN ── */
 .wallet-dropdown-wrap{position:relative;display:inline-block;}
 .wallet-dropdown{
@@ -948,6 +977,22 @@ const DEMO_MARKETS = [
 // ─────────────────────────────────────────────
 // WALLET
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// TOAST NOTIFICATION SYSTEM
+// ─────────────────────────────────────────────
+function showToast(message, type='info', duration=3000){
+  const container = document.getElementById('toast-container');
+  const icons = {success:'✅', error:'❌', info:'ℹ️', warning:'⚠️'};
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(()=>{
+    toast.style.animation = 'toast-out .25s ease forwards';
+    setTimeout(()=>toast.remove(), 250);
+  }, duration);
+}
+
 function toggleWalletDropdown(){
   if(!wallet){
     connectWallet();
@@ -986,7 +1031,7 @@ function disconnectWallet(){
 
 async function connectWallet(){
   if(typeof window.ethereum === 'undefined'){
-    alert('MetaMask not found!');
+    showToast('MetaMask not found! Please install it.','error');
     return;
   }
   try{
@@ -1008,7 +1053,7 @@ async function connectWallet(){
     document.getElementById('connect-btn').style.color = 'var(--green)';
   } catch(e){
     console.error(e);
-    alert('Connection failed: '+e.message);
+    showToast('Connection failed: '+e.message,'error');
   }
 }
 
@@ -1026,8 +1071,8 @@ async function glRead(functionName, args=[]){
 }
 
 async function glWrite(functionName, args=[], valueWei='0'){
-  if(!wallet){ alert('Connect your wallet first.'); return null; }
-  if(!window.GLSDK){ alert('GenLayer SDK still loading, try again in a second.'); return null; }
+  if(!wallet){ showToast('Connect your wallet first!','warning'); return null; }
+  if(!window.GLSDK){ showToast('SDK still loading, try again!','warning'); return null; }
   try{
     const client = window.GLSDK.createClient({
       chain: window.GLSDK.studionet,
@@ -1329,10 +1374,10 @@ function setStake(v){ document.getElementById('stake-amount').value=v; }
 // PLACE BET
 // ─────────────────────────────────────────────
 async function placeBet(){
-  if(selectedOutcome===null){ alert('Select an outcome first.'); return; }
+  if(selectedOutcome===null){ showToast('Please select an outcome first!','warning'); return; }
   const amount = parseFloat(document.getElementById('stake-amount').value||0);
-  if(amount<=0){ alert('Enter a stake amount.'); return; }
-  if(!wallet){ alert('Connect your wallet first.'); return; }
+  if(amount<=0){ showToast('Please enter a stake amount!','warning'); return; }
+  if(!wallet){ showToast('Connect your wallet first!','warning'); return; }
 
   const statusEl = document.getElementById('bet-status');
   const valueWei = (BigInt(Math.floor(amount*1e6))*BigInt(1e12)).toString();
@@ -1349,7 +1394,7 @@ async function placeBet(){
 // RESOLVE MARKET
 // ─────────────────────────────────────────────
 async function resolveMarket(){
-  if(!wallet){ alert('Connect your wallet first.'); return; }
+  if(!wallet){ showToast('Connect your wallet first!','warning'); return; }
   const statusEl = document.getElementById('resolve-status');
   setStatus(statusEl,'pending','Submitting to AI validators...');
   try{
@@ -1368,7 +1413,7 @@ async function resolveMarket(){
 // CLAIM WINNINGS
 // ─────────────────────────────────────────────
 async function claimWinnings(){
-  if(!wallet){ alert('Connect your wallet first.'); return; }
+  if(!wallet){ showToast('Connect your wallet first!','warning'); return; }
   const statusEl = document.getElementById('claim-status');
   try{
     const hash = await glWrite('claim_winnings',[currentMarket.id]);
@@ -1390,10 +1435,10 @@ async function createMarket(){
   const outcomes = Array.from(outEls).map(e=>e.value.trim()).filter(Boolean);
 
   if(!q||!cat||!url||!deadline||outcomes.length<2){
-    alert('Please fill in all fields and add at least 2 outcomes.'); return;
+    showToast('Please fill in all fields and add at least 2 outcomes!','warning'); return;
   }
-  if(outcomes.length>8){ alert('Max 8 outcomes.'); return; }
-  if(!wallet){ alert('Connect your wallet first.'); return; }
+  if(outcomes.length>8){ showToast('Maximum 8 outcomes allowed!','warning'); return; }
+  if(!wallet){ showToast('Connect your wallet first!','warning'); return; }
 
   const deadlineTs = Math.floor(new Date(deadline).getTime()/1000);
   const statusEl = document.getElementById('create-status');
@@ -1415,7 +1460,7 @@ async function createMarket(){
 function addOutcome(){
   const builder = document.getElementById('outcomes-builder');
   const count = builder.children.length;
-  if(count>=8){ alert('Max 8 outcomes.'); return; }
+  if(count>=8){ showToast('Maximum 8 outcomes allowed!','warning'); return; }
   const div = document.createElement('div');
   div.className='outcome-input-row';
   div.innerHTML=`<input class="form-input" placeholder="Outcome ${count+1}"/><button class="remove-outcome" onclick="removeOutcome(this)">×</button>`;
@@ -1424,7 +1469,7 @@ function addOutcome(){
 
 function removeOutcome(btn){
   const builder = document.getElementById('outcomes-builder');
-  if(builder.children.length<=2){ alert('Need at least 2 outcomes.'); return; }
+  if(builder.children.length<=2){ showToast('Need at least 2 outcomes!','warning'); return; }
   btn.parentElement.remove();
 }
 
