@@ -1077,6 +1077,7 @@ async function connectWallet(){
     document.getElementById('connect-btn').textContent = 'Connected';
     document.getElementById('connect-btn').style.background = '#1a2e1a';
     document.getElementById('connect-btn').style.color = 'var(--green)';
+    localStorage.setItem('zg_last_connected', Date.now().toString());
   } catch(e){
     console.error(e);
     showToast('Connection failed: '+e.message,'error');
