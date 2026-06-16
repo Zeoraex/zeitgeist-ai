@@ -486,6 +486,24 @@ main{max-width:1200px;margin:0 auto;padding:2.5rem 1.5rem;}
 .stake-wrap{margin-bottom:1.25rem;}
 .stake-label{font-size:12px;color:var(--muted);margin-bottom:6px;display:block;}
 .stake-input-row{display:flex;gap:8px;}
+.potential-win{
+  margin-top:8px;padding:10px 14px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:8px;font-size:13px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.potential-win-label{color:var(--muted2);}
+.potential-win-amount{color:var(--green);font-weight:700;font-size:15px;}
+.countdown-badge{
+  font-size:10px;font-weight:600;
+  padding:2px 7px;border-radius:4px;
+  background:var(--accent)20;color:var(--accent2);
+  border:1px solid var(--accent)40;
+}
+.countdown-badge.ending-soon{
+  background:#f8717120;color:#f87171;
+  border-color:#f8717140;
+}
 .stake-input{
   flex:1;background:var(--bg3);border:1px solid var(--border2);
   border-radius:10px;padding:10px 14px;
@@ -841,7 +859,7 @@ footer a{color:var(--accent2);text-decoration:none;}
         <div class="stake-wrap">
           <label class="stake-label">Stake amount</label>
           <div class="stake-input-row">
-            <input class="stake-input" type="number" id="stake-amount" placeholder="0.0" min="0" step="0.01"/>
+            <input class="stake-input" type="number" id="stake-amount" placeholder="0.0" min="0" step="0.01" oninput="updatePotentialWin()"/>
             <div class="stake-currency">GEN</div>
           </div>
           <div class="stake-presets">
@@ -850,6 +868,11 @@ footer a{color:var(--accent2);text-decoration:none;}
             <button class="preset-btn" onclick="setStake(100)">100</button>
             <button class="preset-btn" onclick="setStake(500)">500</button>
           </div>
+        </div>
+
+        <div class="potential-win" id="potential-win" style="display:none;">
+          <span class="potential-win-label">🏆 Potential win</span>
+          <span class="potential-win-amount" id="potential-win-amount">~0 GEN</span>
         </div>
 
         <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;" onclick="placeBet()">
@@ -1023,11 +1046,13 @@ function copyWalletAddress(){
 
 function disconnectWallet(){
   wallet = null;
+  localStorage.removeItem('zg_last_connected');
   document.getElementById('wallet-display').textContent = 'Not connected';
   document.getElementById('connect-btn').textContent = 'Connect Wallet';
   document.getElementById('connect-btn').style.background = '';
   document.getElementById('connect-btn').style.color = '';
   document.getElementById('wallet-dropdown').classList.remove('open');
+  showToast('Wallet disconnected','info');
 }
 
 async function connectWallet(){
@@ -1250,6 +1275,20 @@ function renderMarketCard(m){
       statusBadge = `<span class="badge-live">● Live</span>`;
     }
 
+    // countdown
+    let countdownHtml = '';
+    if(!m.resolved && m.deadline > 0){
+      const diff = m.deadline - Math.floor(Date.now()/1000);
+      if(diff > 0){
+        const days = Math.floor(diff/86400);
+        const hrs  = Math.floor((diff%86400)/3600);
+        const mins = Math.floor((diff%3600)/60);
+        const soon = diff < 86400;
+        const label = days>0 ? `${days}d ${hrs}h` : hrs>0 ? `${hrs}h ${mins}m` : `${mins}m`;
+        countdownHtml = `<span class="countdown-badge ${soon?'ending-soon':''}">⏱ ${label}</span>`;
+      }
+    }
+
     return `<div class="market-card" onclick="openMarket(${m.id})">
       <div class="market-card-cat cat-${m.category}">${catIcon} ${m.category}</div>
       <div class="market-card-q">${m.question}</div>
@@ -1259,7 +1298,7 @@ function renderMarketCard(m){
       </div>
       <div class="market-card-footer">
         <div class="market-vol">Vol <strong>${(parseInt(m.total_volume||0)/1e18).toFixed(0)} GEN</strong></div>
-        ${statusBadge}
+        <div style="display:flex;gap:6px;align-items:center;">${countdownHtml}${statusBadge}</div>
       </div>
     </div>`;
 }
@@ -1637,6 +1676,22 @@ drawFrame();
 async function checkExistingWalletConnection(){
   if(typeof window.ethereum === 'undefined') return;
   try{
+    // Check session timestamp — expire after 12 hours
+    const SESSION_HOURS = 12;
+    const lastConnected = localStorage.getItem('zg_last_connected');
+    if(lastConnected){
+      const hoursSince = (Date.now() - parseInt(lastConnected)) / (1000 * 60 * 60);
+      if(hoursSince > SESSION_HOURS){
+        // Session expired — clear and don't auto-connect
+        localStorage.removeItem('zg_last_connected');
+        console.log('Wallet session expired after', SESSION_HOURS, 'hours');
+        return;
+      }
+    } else {
+      // No session timestamp — don't auto-connect
+      return;
+    }
+
     // eth_accounts does NOT trigger a popup - just checks existing authorization
     const accounts = await window.ethereum.request({method:'eth_accounts'});
     if(accounts && accounts.length > 0){
@@ -1700,6 +1755,23 @@ checkExistingWalletConnection();
   window.addEventListener('scroll', onScroll, {passive:true});
   onScroll();
 })();
+
+// ─────────────────────────────────────────────
+// AUTO-REFRESH EVERY 30 SECONDS
+// ─────────────────────────────────────────────
+let autoRefreshInterval = null;
+
+function startAutoRefresh(){
+  if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+  autoRefreshInterval = setInterval(()=>{
+    // Only refresh if on home page and SDK is ready
+    if(document.getElementById('page-home').style.display !== 'none' && window.glReadClient){
+      loadMarkets();
+    }
+  }, 30000);
+}
+
+startAutoRefresh();
 
 // ─────────────────────────────────────────────
 // INIT
